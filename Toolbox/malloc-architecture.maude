@@ -1,0 +1,99 @@
+
+
+
+load malloc-core-config.maude
+ 
+mod CORE-INTERFACE{K :: TRIV, V :: TRIV} is
+
+    inc CORE-RST .
+	pr (MAP{Address, IndexPair} * (sort Entry{Address, IndexPair} to EntrySet{Address, IndexPair}, op empty to free,  
+       op _,_ : Map{Address, IndexPair} Map{Address, IndexPair} -> Map{Address, IndexPair} to (__))) .	
+endm 
+  
+mod CACHE-LINE-DATA is 
+   pr CORE-INTERFACE{Address, IndexPair} * (sort EntrySet{Address, IndexPair} to MemoryPartition) .
+   
+endm
+  
+view MemoryPartition from TRIV to CACHE-LINE-DATA is 
+  sort Elt to MemoryPartition .
+endv
+  
+mod CACHE-LINE-SET{K :: TRIV} is
+  pr SET{MemoryPartition}  .
+endm
+  
+mod CACHE-LINE-SET-MAP is 
+   pr CACHE-LINE-SET{MemoryPartition} * (sort Set{MemoryPartition} to MemoryMap) .
+endm
+  
+ 
+view MemoryMap from TRIV to CACHE-LINE-SET-MAP is 
+  sort Elt to MemoryMap .
+endv
+  
+  
+mod CACHE-DATA-SET is 
+	***pr SET{Int} .
+	pr LIST{Oid} .
+	pr FLOAT .
+	
+ 	pr MAP{Int, MemoryMap} * (sort Map{Int, MemoryMap} to Cache{Int, MemoryMap},  op insert to update) .
+
+	op <_: CR | Rst:_, InCount:_, HitPer:_, MissPer:_> :   Oid stList Float Float Float  -> 
+												Object [ctor format(n d d d d d d d d d d d d d d d d n)] .
+
+	***op <_: Cache | CM:_, D:_, CacheSz:_, Assoc:_, Hits:_, Miss:_, Penalty:_> : 
+	   ***                                         Oid Cache{Int, MemoryMap} stList Int MapPolicy Float Float Int -> 
+			***									Object [ctor format(n d d d d d d d d d d d d d d d d d d d d d d d d d n)] .
+	
+	op <_: Cache | CM:_, D:_, CacheSz:_, Assoc:_, Hits:_, Miss:_, Penalty:_, Range:_> : 
+	                                            Oid Cache{Int, MemoryMap} stList Int MapPolicy Float Float Int AddressPair -> 
+												Object [ctor format(n d d d d d d d d d d d d d d d d d d d d d d d d d d d d  n)] .
+												
+												
+	op <_: MM | M:_, fetchCount:_, Penalty:_> : Oid MemoryMap Int Int -> Object [ctor format (n d d d d d d d d d d d d d n)] .	       
+      
+endm
+
+
+view stList from TRIV to CACHE-DATA-SET is 
+  	sort Elt to stList .
+ endv
+ 
+
+mod REFERENCE-TABLE is 
+	inc CACHE-DATA-SET .
+	pr QID-SET  .
+	***pr SET{String} .
+ 	pr MAP{Reference, Address} * (sort Map{Reference, Address} to Tbl{Reference, Address}) .
+ 	
+ 	op <_: LocMem | Add:_> : Oid Tbl{Reference, Address} -> Object [ctor format (d d d d d d d d n)] .
+ 	op <_: TBL | Addr:_, LM:_> : Oid Tbl{Reference, Address} Int -> Object [ctor format (d d d d d d d d d d d n)] .		
+ 	op <_: Qu | TidSet:_> : Oid QidSet -> Object [ctor format (nb! d d d d d d d n)] . 
+ 	
+endm
+
+mod TASK-TABLE is
+   inc REFERENCE-TABLE .
+   ***pr SET{stList} .
+   pr MAP{Qid, stList} * (sort Map{Qid, stList} to task{Qid, stList}) .
+   op <_: Task | Data:_> : Oid task{Qid, stList} -> Object [ctor format (nb! d d d d d d d n)] .
+   	
+endm
+
+view AddressPair from TRIV to TASK-TABLE is 
+  	sort Elt to AddressPair .
+ endv
+ 
+mod MEM-TABLE is
+    inc TASK-TABLE .
+    pr MAP{Oid, AddressPair} * (sort Map{Oid, AddressPair} to MemTable{Oid, AddressPair}) .
+    op <_: MemTBL | AddTBL:_> : Oid MemTable{Oid, AddressPair} -> Object [ctor format (nb! d d d d d d d n)] .
+    op <_: AccP | Penalty:_, Count:_> : Oid Int Int -> Object [ctor format(nb! d d d d d d d d d d  d)] .
+endm    
+
+
+
+ 
+  

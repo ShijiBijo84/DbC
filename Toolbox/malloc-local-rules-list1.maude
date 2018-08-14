@@ -1,0 +1,294 @@
+
+
+load malloc-architecture.maude 
+
+mod RULES-1 is
+
+	inc MEM-TABLE .
+	pr SET{Status} .
+	pr SET{Oid} .
+	including (LIST * (op __ to _|_)){Object}.
+    inc RANDOM .
+    
+    
+	op validStatus : Cache{Int, MemoryMap} Address -> Bool .
+	op selectStatus : MemoryMap Address -> Status .
+	op selectStatus : Cache{Int, MemoryMap} Address -> Status .
+	op cacheLineSet : Cache{Int, MemoryMap} MapPolicy Int Address  -> MemoryMap .
+	
+	op valStatusPair : Cache{Int, MemoryMap} Address -> IndexPair .
+	op updateValue : Cache{Int, MemoryMap} Address MapPolicy Int IndexPair IndexPair -> Cache{Int, MemoryMap} . 
+	op updateValue : MemoryMap Address -> MemoryMap .
+	op writeUpdate : Cache{Int, MemoryMap} Address -> Cache{Int, MemoryMap} .
+	
+	
+	op allModified : MemoryMap MapPolicy -> Bool .
+	op LineToFlush : Cache{Int, MemoryMap} Int -> Address .
+	
+	op fetchUpdateLine : Address MemoryMap Cache{Int, MemoryMap} MapPolicy Int  -> Cache{Int, MemoryMap} .
+		
+	op statusSet : MemoryMap Set{Status}  -> Set{Status} .
+	op statusSet : MemoryMap -> Set{Status} .
+		
+	op commitCache : Cache{Int, MemoryMap} -> Cache{Int, MemoryMap} .
+	op commitMemory : Cache{Int, MemoryMap} MemoryMap -> MemoryMap .
+	
+	op Per : Float Float -> Float .
+	op local : Int AddressPair -> Bool .
+	op local : Int Int -> Bool .
+	op local : Tbl{Reference, Address} Set{String} AddressPair -> Bool .
+	op local : Set{String} Tbl{Reference, Address} -> Bool .
+	
+	op deadLock : stList stList Cache{Int, MemoryMap} Tbl{Reference, Address} QidSet List{Object} -> Bool .
+	op allRstNil : List{Object} -> Bool .
+	op createObj : Configuration -> Configuration .
+	op createObj : Configuration OidSet -> Configuration .
+	op alloc : Configuration Tbl{Reference, Address} Set{String} AddressPair Int Tbl{Reference, Address} MemoryMap -> Configuration .
+	op allocConf : Configuration Tbl{Reference, Address} Set{String} AddressPair Int Tbl{Reference, Address} MemoryMap -> Configuration .
+	op freeMem : Cache{Int, MemoryMap} Tbl{Reference, Address} -> Cache{Int, MemoryMap} .
+	op freeMe : MemoryMap Tbl{Reference, Address} -> MemoryMap .
+	op selectAddr : Tbl{Reference, Address} Tbl{Reference, Address} String -> Address .
+	op freeRan : AddressPair Tbl{Reference, Address} -> AddressPair .
+	
+	
+	op changeList : List{Object} Int -> List{Object} .
+	op changeList : List{Object} Int Int List{Object} -> List{Object} .
+	op init : Configuration Nat -> Configuration .
+	
+	
+	var T : Qid .
+	var Tids : QidSet .
+	vars Sch' Ta C1 C2 Me Tbl MT Acc' : Oid .
+	var st : Set{Status} .
+	var stRef : Set{String} .
+	var Ca : Cache{Int, MemoryMap} .
+	vars   y  z  size x' y' i j p p' N lm  : Int .
+	vars k' k : Int .
+	var x : Address .
+	var r : String .
+	var s s' : Status .
+	var addr addrLoc addrLoc' : Tbl{Reference, Address} .
+	vars rst d rst' Rs Rs' : stList .
+	var mapPol : MapPolicy .
+	var task : task{Qid, stList} .
+	vars M M' mapSet : MemoryMap .
+	var REST config0 : Configuration .
+	var ReSet : OidSet .
+	var Re : Instruction .
+	vars hp mp m h ic : Float .
+	var MTbl : MemTable{Oid, AddressPair} .
+	var mt mt' : AddressPair .
+	vars OList1 OList2 : List{Object} .
+	var ms : Msg .
+	var obj : Object .
+	
+	ceq selectAddr(addr, addrLoc, r) = addr[ref(r)] if addr[ref(r)] =/= undefined .
+	ceq selectAddr(addr, addrLoc, r) = addrLoc[ref(r)] if addrLoc[ref(r)] =/= undefined .
+
+	eq selectStatus((Ca, N |-> (x |-> (y, s), M)), x) = s .
+	eq selectStatus(Ca, x) = unknown [owise] .
+	
+	eq selectStatus((M, x |-> (y, s)), x) = s .
+	eq selectStatus(M, x) = unknown [owise] .
+	
+	eq valStatusPair((Ca, N |-> (x |-> (y, s), M)), x) = (y, s) .
+
+	
+	eq updateValue(Ca, x, Assoc(i), size, (y, s), (y', s')) = 
+								update((x rem (size quo i)), (x |-> (y, s), Ca[(x rem (size quo i))] \ (x |-> (y', s'))), Ca) .
+							
+	eq writeUpdate((Ca, N |-> (x |-> (y, s), M)), x) = (Ca, N |-> (x |-> (y + 1, mo), M)) .
+	
+	ceq validStatus((Ca, N |-> (x |-> (y, s), M)), x) = true if s == sh or s == mo .
+	eq validStatus(Ca, undefined) = false .
+	eq validStatus(Ca, x) = false [owise] .
+	
+	eq commitCache((Ca, N |-> (x |-> (y, mo), M))) = commitCache((Ca, N |-> (x |-> (y, sh), M))) .
+	ceq commitCache((Ca, N |-> (x |-> (y, s), M))) = (Ca, N |-> (x |-> (y, s), M)) if s =/= mo .
+	eq commitCache(empty) = empty .
+	
+	eq commitMemory((Ca, N |-> (x |-> (y, mo), M)), (M', x |-> (z, inv))) = 
+	                                    commitMemory((Ca, N |-> M), (M', x |-> (y, sh))) .
+	ceq commitMemory((Ca, N |-> (x |-> (y, s), M)), M') = commitMemory((Ca, N |-> M), M') if (s =/= mo) .
+	eq commitMemory((Ca, N |-> empty), M') = commitMemory(Ca, M') .
+	eq commitMemory(empty, M') = M' .
+	
+
+    eq fetchUpdateLine(x, (M', x |-> (y, sh)), (Ca, N |-> (x |-> (y', s), M)), Assoc(i), size) = (Ca, N |-> (x |-> (y, sh), M)) .
+	ceq fetchUpdateLine(x, (M', x |-> (y, sh)), Ca, Assoc(i), size) = update((x rem (size quo i)), ((x |-> (y, sh)), empty), Ca) 
+																			if Ca[(x rem (size quo i))] == undefined  . 
+	ceq fetchUpdateLine(x, (M', x |-> (y, sh)), Ca, Assoc(i), size) =  
+			update((x rem (size quo i)), (x |-> (y, sh), Ca[(x rem (size quo i))]), Ca) if | cacheLineSet(Ca, Assoc(i), size, x) | < i .
+			
+	ceq fetchUpdateLine(x, (M', x |-> (y, sh)), (Ca, N |-> (x' |-> (y', inv), M)), Assoc(i), size) = 
+	                                     update((x rem (size quo i)), (x |-> (y, sh), M), Ca) if x rem (size quo i) == N .																															
+	
+    eq fetchUpdateLine(x, (M', x |-> (y, sh)), (Ca, N |-> (x' |-> (y', sh), M)), Assoc(i), size) = 
+	                                                               update((x rem (size quo i)), (x |-> (y, sh), M), Ca) [owise] .
+	 
+	eq LineToFlush((Ca, N |-> (x |-> (y, mo), M)), N) = x .
+	                       																		                                                      																		
+	ceq cacheLineSet(Ca, Assoc(i), size, x) = empty if Ca[(x rem (size quo i))] == undefined .
+	eq cacheLineSet(Ca, Assoc(i), size, x) = Ca[x rem (size quo i)] [owise] .
+	
+	ceq statusSet((M, (x |-> (y, s))), st) = statusSet(M, (st, s)) if | M | > 0 .
+	eq statusSet(x |-> (y, s), st) = st, s .
+	eq allModified(empty, mapPol) = false .
+	ceq allModified(M, Assoc(i)) = false if | M | < i .
+	ceq allModified(M, Assoc(i)) = false if ((sh in statusSet(M, empty)) or (inv in statusSet(M, empty))) .
+	eq allModified(M, mapPol) = true [owise] .
+	
+	
+	***ceq local(x,  ((y -- z), mt)) = true if x == y or x == z or (x > y and x < z) .
+	***eq local(x, (x, mt)) = true .
+	***ceq local(x,  ((y -- z), mt)) = local(x, mt) if x < y or x > z .
+	***eq local(x, mt) = false [owise] .
+	
+	eq freeMem((Ca, N |-> (x |-> (y, s), M)), (ref(r) |-> x, addrLoc)) = freeMem((Ca, N |-> M), addrLoc) .
+	eq freeMem((Ca, N |-> (x |-> (y, s))), (ref(r) |-> x, addrLoc)) = freeMem(Ca, addrLoc) .
+	eq freeMem((Ca, N |-> empty), addrLoc) = freeMem(Ca, addrLoc) .
+	eq freeMem(empty, empty) = empty .
+	eq freeMem(Ca, addrLoc) = Ca [owise] .
+	
+	
+	eq freeMe((M, x |-> (y, s)), (ref(r) |-> x, addrLoc)) = freeMe(M, addrLoc) .
+	eq freeMe(empty, empty) = empty .
+	eq freeMe(M, addrLoc) = M [owise] .
+	
+	eq freeRan((N, mt), (ref(r) |-> N, addr)) = freeRan(mt, addr) .
+	eq freeRan(mt, addr) = mt [owise] .
+	
+	
+	eq {(broadcast Re from C1) OList1 REST} = {(multicast Re from C1 to objectIds(REST)) OList1 REST} .
+	***eq (broadcast Re from C1) REST = (multicast Re from C1) REST .
+	eq  multicast Re from C1 to none = none .
+	eq  multicast Re from C1 to C1 ; ReSet = (multicast Re from C1 to ReSet) .
+	eq  multicast Re from C1 to C2 ; ReSet = (msg Re from C1 to C2)  (multicast Re from C1 to ReSet) .
+	
+	
+	eq objectIds(< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > REST) = objectIds(REST) . 
+	eq objectIds(< C1 : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > REST) = C1 ; objectIds(REST) . 
+	
+	eq objectIds(< Me : MM | M: mapSet, fetchCount: x, Penalty: p' > REST) = Me ; objectIds(REST) . 
+	eq objectIds(< Tbl : TBL | Addr: addr, LM: lm > REST) = objectIds(REST) . 
+	eq objectIds(< MT : MemTBL | AddTBL: MTbl > REST) = objectIds(REST) . 
+	eq objectIds(< Sch' : Qu | TidSet: Tids > REST) = objectIds(REST) .
+	eq objectIds(< Ta : Task | Data: task > REST) = objectIds(REST) .
+	eq objectIds(< C1 : LocMem | Add: addrLoc' > REST) = objectIds(REST) .
+	eq objectIds(< Acc' : AccP | Penalty: p, Count: k' > REST) = objectIds(REST) .
+	eq objectIds((broadcast Re from C1) REST) = objectIds(REST) .
+	eq objectIds(ms REST) = objectIds(REST) .
+	
+	eq objectIds(OList1 REST) = objectIds(REST) .
+	eq objectIds(none) = none .
+	
+	eq Per(0.0, 0.0) = 0.0 .
+	
+	eq Per(h, ic) = (h / ic) * 100.0 .
+	
+	
+	eq deadLock(rst, (d ; fetch(N)), Ca, addr, Tids, OList2) = true .
+	ceq deadLock(nil, d, Ca, addr, empty, OList2) = true if allRstNil(OList2) == false .
+	ceq deadLock((lockBl(r) ; rst), d, Ca, addr, Tids, OList2) = true if valStatusPair(Ca, addr[ref(r)]) == (1, sh) .
+	***eq deadLock(rst, d, Ca, addr, Tids, OList2) = false if  allRstNil(OList2).
+	
+	ceq allRstNil(< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2) = false if rst =/= nil .
+	 eq allRstNil(< C1 : CR | Rst: nil, InCount: ic, HitPer: hp, MissPer: mp > | OList2) =  allRstNil(OList2) .
+	 eq allRstNil(nil) = true .
+	 
+	 eq {init(config0 < Acc' : AccP | Penalty: p, Count: k' > OList1, k)} =  {config0 < Acc' : AccP | Penalty: p, Count: k >
+	      changeList(OList1, (random(k) rem size(OList1) + 1))} .
+	 
+	eq  changeList((OList1), x) = changeList(( OList1), x, 1, nil) .
+	***eq changeList(< C1 : LocMem | Add: addrLoc' >, x) = < C1 : LocMem | Add: addrLoc' > .
+	ceq changeList((obj | OList1), x, y, OList2) =  changeList(OList1, x, y + 1, (OList2 | obj)) if x > y .
+	ceq changeList((obj | OList1), x, y, OList2) = obj | OList2 | OList1  if x == y .
+	eq changeList(nil, x, y, OList2) = OList2 .
+	
+	 
+	
+	eq (msg RdX(x) from C1 to C2)  
+	 < C2 : Cache | CM: (Ca, N |-> (x |-> (y, sh), M)), D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+		=
+	< C2 : Cache | CM: (Ca, N |-> (x |-> (y, inv), M)), D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > .
+    	   
+	ceq (msg RdX(x) from C1 to C2) 
+		< C2 : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >   
+		= 
+    	< C2 : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > if selectStatus(Ca, x) =/= sh .      
+  
+
+	eq (msg RdX(x) from C1 to Me ) 
+   		< Me : MM | M: (x |-> (y, sh), mapSet), fetchCount: i, Penalty: p' >   = < Me : MM | M:  (x |-> (y, inv), mapSet), fetchCount: i, Penalty: p' > .
+	
+	eq (msg Rd(x) from C1 to Me) 
+   		< Me : MM | M: mapSet, fetchCount: i, Penalty: p' >  =  < Me : MM | M: mapSet, fetchCount: i, Penalty: p' >  .    	    
+  
+	ceq (msg Rd(x) from C1 to C2) 
+		< C2 : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >   
+		= 
+    	< C2 : Cache | CM: Ca, D: (flush(x) ; d), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >  
+	 	  	if selectStatus(Ca, x) == mo . 
+	 	  
+	ceq (msg Rd(x) from C1 to C2) 
+		< C2 : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >   
+		= 
+		< C2 : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >  if selectStatus(Ca, x) =/= mo .   
+	
+    ceq local(addr, (r, stRef), mt) = local(addr, stRef, mt) if local(addr[ref(r)], mt) .
+	ceq local(addr, (r, stRef), (x, mt)) = local(addr, stRef, mt) if addr[r] == x .
+	eq local(addr, empty, mt) = true .
+	eq local(addr, stRef, mt) = false [owise] .
+	
+	ceq local(x, (y ~ z)) = true if x == y or x == z or (x > y and x < z) .
+	eq  local(x, (y ~ z)) = false [owise] .
+	ceq local(x, ((y ~ z), mt)) = true if local(x, (y ~ z)) .
+	ceq local(x, ((y ~ z), mt)) = local(x, mt) if local(x, (y ~ z)) == false .
+	
+	eq local(x, (x, mt)) = true .
+	eq local(x, (y, mt)) = local(x, mt) .
+	ceq local(x, (mt, y)) = true if local(x, mt) .
+	ceq local(x, (mt, y)) = local(x, y) if local(x, mt) == false .
+	eq local(x, x) = true .
+	eq local(x, y) = false .
+	eq local((undefined).Address, mt) = false .
+	
+	ceq local((r, stRef), addrLoc) = local(stRef, addrLoc) if addrLoc[ref(r)] =/= undefined .
+	eq local(empty, addrLoc) = true .
+	eq local(stRef, addrLoc) = false [owise] .
+	
+    ceq alloc(REST, addr, stRef, mt, lm, addrLoc, M) 
+              = 
+              REST if local(addr, stRef, mt) or local(stRef, addrLoc) .	
+    eq alloc(REST, addr, stRef, mt, lm, addrLoc, M) = allocConf(REST, addr, stRef, mt, lm, addrLoc,M) [owise]  .  
+    
+    ceq allocConf(REST, addr, (r, stRef), mt, lm, addrLoc, M) = allocConf(REST, addr, stRef, mt, lm, addrLoc, M) if local(r, addrLoc) .     
+    ceq allocConf(REST, addr, (r, stRef), mt, lm, addrLoc, M) = allocConf(REST, addr, stRef, mt, lm, addrLoc, M) if local(addr[ref(r)], mt) 
+                                                              and local(r, addrLoc) == false .
+    ceq allocConf(REST, addr, (r, stRef), mt, lm, addrLoc, M) = 
+    								allocConf(REST, addr, stRef, mt, lm, (addrLoc, ref(r) |-> (lm + 1)), (M, (lm + 1) |-> (0, sh)))
+    														if local(r, addrLoc) == false and local(addr[ref(r)], mt) == false .
+    eq 	allocConf(< CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+                < Tbl : TBL | Addr: addr, LM: lm >
+                < Loc(C1) : LocMem | Add: addrLoc' >
+                < Me : MM | M: mapSet, fetchCount: x, Penalty: p' >, addr, empty, mt, lm, addrLoc, M') 
+                = 	
+                < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: (mt, lm + 1) >																			
+	            < Tbl : TBL | Addr: addr, LM: lm + 1 >
+	            < Loc(C1) : LocMem | Add: addrLoc > 
+	            < Me : MM | M: M', fetchCount: x, Penalty: p' > .
+	            
+rl [MAlloc] : (< C1 : CR | Rst: (malloc(stRef) ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+               < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+                < Tbl : TBL | Addr: addr, LM: lm >
+                < Loc(C1) : LocMem | Add: addrLoc >
+                < Me : MM | M: mapSet, fetchCount: x, Penalty: p' >
+                =>
+                ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+                alloc(< CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+                < Tbl : TBL | Addr: addr, LM: lm >
+                < Loc(C1) : LocMem | Add: addrLoc >
+                < Me : MM | M: mapSet, fetchCount: x, Penalty: p' >, addr, stRef, mt, lm, addrLoc, mapSet) .	
+	
+		
+endm

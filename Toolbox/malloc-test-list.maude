@@ -1,0 +1,148 @@
+
+
+load malloc-local-rules-list2.maude    
+
+mod CORE-TEST is 
+    
+	inc RULES-2 .
+	ops C1 C2 C3 C4 Tbl M Sch Ta MT Acc : -> Oid [ctor] .
+	ops exp1 exp1Lock exp2 exp2Lock exp3 exp3Lock exp4 exp4Lock exp5 exp5Lock exp6 exp6Lock cc : -> Configuration .
+	
+		     	
+eq exp1 =  
+	           (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >) 
+				  < Acc : AccP | Penalty: 0, Count: 0 >	
+             	  < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: 0 ~ 5 >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (6 ~ 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (12 ~ 17) > 
+				  
+				  < Tbl : TBL | Addr: ref("ab") |-> 1,  ref("ac") |-> 2, ref("ad") |-> 3, LM: 17 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh),  fetchCount: 0, Penalty: 0 >  
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)), 				 
+             					 'T1 |-> (malloc("yx") ; (read("ab") ; write("ac")) * 20),
+             					 'T2 |-> (malloc("ae") ; (write("ae") ; write("ab")) * 30),
+             					  'T3 |-> (write("ad") ; write("ab")) * 30 > .
+               
+eq exp1Lock =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >) 
+				  < Acc : AccP | Penalty: 0, Count: 0 >	
+             	  < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: 0 ~ 5 >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (6 ~ 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (12 ~ 17) > 
+				  
+				  < Tbl : TBL | Addr: ref("ab") |-> 1,  ref("ac") |-> 2, ref("ad") |-> 3, ref("yy") |-> 5, LM: 17 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 5 |-> (0,sh),  fetchCount: 0, Penalty: 0 >  
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)), 				 
+             					 'T1 |-> (malloc("yx") ; lock("yy") ; (read("ab") ; write("yx")) * 20 ; unlock("yy")) ,
+             					 'T2 |-> (malloc("ae") ; lock("yy") ; (write("ae") ; write("ab")) * 30 ; unlock("yy")),
+             					  'T3 |-> (lock("yy") ; (write("ad") ; write("ab")) * 30 ; unlock("yy")) > .
+               
+				  
+
+eq exp2 = 
+          (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C4 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				 
+		  < Acc : AccP | Penalty: 0, Count: 0 >		  
+          < Ta : Task | Data: 'T1 |-> (malloc("i1") ;
+	                           write("i1") ; write("i1") ; 							
+	                           (read("i1") ; 													
+	                            lock("l1") ; read("x3") ; write("x1") ; unlock("l1") ;
+	                            lock("l2") ; write("y1") ; unlock("l2") ; 
+	                            lock("l3") ; read("z3") ; write("z1") ; unlock("l3") ;
+	                            read("i1") ; write("i1")) * 20),  
+	                            						
+								'T2 |-> (malloc("i2") ; write("i2") ; write("i2") ; 							
+								(read("i2") ; 													
+								lock("l1") ; read("x3") ; write("x2") ; unlock("l1") ;
+								lock("l2") ; read("y1") ; write("y2") ; unlock("l2") ;
+								write("x2") ; read("i2") ; write("i2")) * 30),   						
+
+								'T3 |-> (malloc("i3") ; write("i3") ; write("i3") ; 							
+	                             (read("i3") ; lock("l1") ; write("x3") ; unlock("l1") ; write("y3") ; 
+								lock("l3") ; read("z1") ; write("z3") ; unlock("l3") ; 
+								read("i3") ; write("i3")) * 50),
+
+								'main |-> (write("x1") ; write("x2") ; write("x3") ; write("y1") ; write("y2") ; write("y3") ; 
+								 write("z1") ; write("z2") ; write("z3") ; 				
+								 Spawn('T1) ; Spawn('T2) ; Spawn('T3))  >
+								 
+			      < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (0 ~ 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (6 ~ 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (12 ~ 17) >
+				  < CaId(C4) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (18 ~ 20) >
+				  
+				  < Tbl : TBL | Addr: ref("x1") |-> 1,  ref("x2") |-> 1, ref("x3") |-> 1, ref("l1") |-> 3,
+				  					  ref("y1") |-> 7,  ref("y2") |-> 7, ref("y3") |-> 7, ref("l2") |-> 9,
+				  					  ref("z1") |-> 13,  ref("z2") |-> 13, ref("z3") |-> 13, ref("l3") |-> 15, LM: 20 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh),
+				  				4 |-> (0, sh), 5 |-> (0,sh), 6 |-> (0,sh), 7 |-> (0,sh),
+				  				8 |-> (0, sh), 9 |-> (0,sh), 10 |-> (0,sh), 11 |-> (0,sh),
+				  				12 |-> (0, sh), 13 |-> (0,sh), 14 |-> (0,sh), 15 |-> (0,sh), 
+				                16 |-> (0, sh), 17 |-> (0,sh), fetchCount: 0, Penalty: 0 > .					  				
+
+eq exp2Lock = 
+          (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C4 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+		  < Acc : AccP | Penalty: 0, Count: 0 >			  
+          < Ta : Task | Data: 'T1 |-> (lock("l4") ; malloc("i1") ;
+	                           write("i1") ; write("i1") ; 							
+	                           (read("i1") ; 													
+	                            lock("l1") ; read("x3") ; write("x1") ; unlock("l1") ;
+	                            lock("l2") ; write("y1") ; unlock("l2") ; 
+	                            lock("l3") ; read("z3") ; write("z1") ; unlock("l3") ;
+	                            read("i1") ; write("i1")) * 20 ; unlock("l4")),  
+	                            						
+								'T2 |-> (lock("l4") ; malloc("i2") ; write("i2") ; write("i2") ; 							
+								(read("i2") ; 													
+								lock("l1") ; read("x3") ; write("x2") ; unlock("l1") ;
+								lock("l2") ; read("y1") ; write("y2") ; unlock("l2") ;
+								write("x2") ; read("i2") ; write("i2")) * 30 ; unlock("l4")),   						
+
+								'T3 |-> (lock("l4") ; malloc("i3") ; write("i3") ; write("i3") ; 							
+	                             (read("i3") ; lock("l1") ; write("x3") ; unlock("l1") ; write("y3") ; 
+								lock("l3") ; read("z1") ; write("z3") ; unlock("l3") ; 
+								read("i3") ; write("i3")) * 50 ; unlock("l4")),
+
+								'main |-> (write("x1") ; write("x2") ; write("x3") ; write("y1") ; write("y2") ; write("y3") ; 
+								 write("z1") ; write("z2") ; write("z3") ; 				
+								 Spawn('T1) ; Spawn('T2) ; Spawn('T3))  >
+								 
+			      < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (0 ~ 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (6 ~ 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (12 ~ 17) >
+				  < CaId(C4) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: (18 ~ 20) >
+				  
+				  < Tbl : TBL | Addr: ref("x1") |-> 1,  ref("x2") |-> 1, ref("x3") |-> 1, ref("l1") |-> 3,
+				  					  ref("y1") |-> 7,  ref("y2") |-> 7, ref("y3") |-> 7, ref("l2") |-> 9,
+				  					  ref("z1") |-> 13,  ref("z2") |-> 13, ref("z3") |-> 13, ref("l3") |-> 15, 
+				  					  ref("l4") |-> 16, LM: 20 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh),
+				  				4 |-> (0, sh), 5 |-> (0,sh), 6 |-> (0,sh), 7 |-> (0,sh),
+				  				8 |-> (0, sh), 9 |-> (0,sh), 10 |-> (0,sh), 11 |-> (0,sh),
+				  				12 |-> (0, sh), 13 |-> (0,sh), 14 |-> (0,sh), 15 |-> (0,sh), 
+				                16 |-> (0, sh), 17 |-> (0,sh), fetchCount: 0, Penalty: 0 > .					  				
+
+
+
+
+
+endm

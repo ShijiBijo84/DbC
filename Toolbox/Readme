@@ -1,0 +1,50 @@
+This Readme contains information concerning the use of the Maude implementation of our model of parallel architectures.
+
+
+* Pre-requisites
+  -------------------
+  
+  Maude 2 or higher 
+  Maude home-page http://maude.cs.uiuc.edu.
+  
+* Explanation of files
+  --------------------------
+  1. malloc-core-config.maude
+  
+      This module explains the run-time syntax of the operational semantics. 
+      
+  2. malloc-architecture.maude
+  
+      This module explains various objects in the configuration and the cache memory structure on the basis of 
+      associativity. It also explains about main memory architecture
+      
+  3. malloc-local-rules-1.maude
+  
+     It includes sorts and equations for the configuration in which cores are floating objects.
+     
+  4. malloc-local-rules-2.maude
+  
+     It includes rewrite rules for the configuration in which cores are floating objects.   
+ 
+  5. malloc-test-list.maude
+  
+      This module shows some initial configurations namely exp1, exp1Lock,...in which cores are collected in list. 
+      These configurations can be used for simulations. In this file, each configuration exp1 has a lock version 
+      exp1Lock.
+      
+      
+ * How to simulate the this Maude model
+   ---------------------------------------  
+        Invoke Maude interpreter.Then type 'load locks-test-list.maude' to load the    configuration with list of cores. 
+        The  CORE-TEST module in this file will bring all other modules in Maude user-interface. 
+        Then the 'frew {init(exp1, k)} .' command will simulate the initial configuration {exp1} and return the final state.
+        The init function will randomly pick a core from the list and push to the head of the list of cores. 
+        The value of k is an integer which is the random seed. The configuration can be simulated from a different random seed 
+        also.
+        
+        All other configurations in this file can be simulated in the same way.
+        
+       
+        
+  
+	

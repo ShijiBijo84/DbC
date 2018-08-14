@@ -1,0 +1,108 @@
+---operator ? for choice operator. 
+
+
+ mod CORE-CONFIG is 
+    inc  CONFIGURATION .
+    pr INT .
+    pr QID .
+    pr STRING .
+    
+    
+    sorts GlobalSystem OidSet Instruction Status MapPolicy Reference Address .
+    sorts  Cores IndexPair AddressPair .                         
+	subsort Oid < OidSet .
+	subsort    Int < Address   .
+	subsort  String < Reference .
+	
+    op {_} : Configuration -> GlobalSystem [ctor] .
+	op none : -> OidSet [ctor] .
+	op _;_ : OidSet OidSet -> OidSet [ctor assoc comm id: none] .
+	op broadcast_from_ : Instruction Oid -> Configuration .
+	***op multicast_from_ : Instruction Oid -> Msg [ctor] .
+	op multicast_from_to_ : Instruction Oid OidSet -> Msg [ctor] .
+	op msg_from_to_ : Instruction Oid Oid -> Msg [ctor] .
+	op _from_ : Instruction Oid -> Instruction [ctor] .
+	op objectIds : Configuration -> OidSet [frozen(1)] . 
+    ops sh mo inv unknown :  -> Status [ctor] .
+    op Assoc : Int -> MapPolicy [ctor] . 	
+    
+    op (_~_) : Address Address -> AddressPair [ctor] .
+    
+    op (_,_) : Address AddressPair  -> AddressPair [ctor] .
+    op (_,_) : AddressPair Address  -> AddressPair [ctor] .
+    op (_,_) : AddressPair AddressPair -> AddressPair [ctor] .
+    op (_,_) : Nat Status -> IndexPair [ctor] .   
+    op ref : String -> Reference [ctor] .	
+    
+    op CaId : Oid -> Oid . 
+    op Loc : Oid -> Oid .
+    op Memory : -> Oid .
+       	     
+endm
+
+
+view Instruction from TRIV to CORE-CONFIG is
+	sort Elt to Instruction .
+endv
+
+view Status from TRIV to CORE-CONFIG is
+	sort Elt to Status .
+endv
+
+view Oid from TRIV to CORE-CONFIG is 
+	sort Elt to Oid .
+endv
+view Address from TRIV to CORE-CONFIG is 
+	sort Elt to Address .
+endv
+
+view IndexPair from TRIV to CORE-CONFIG is 
+	sort Elt to IndexPair .
+endv
+
+view Object from TRIV to CORE-CONFIG is 
+  	sort Elt to Object .
+ endv
+ 
+ view Reference from TRIV to CORE-CONFIG is 
+  	sort Elt to Reference .
+ endv
+ 
+ 
+mod CORE-RST is
+ inc CORE-CONFIG .
+    pr SET{String} .
+    pr (LIST{Instruction} * (sort List{Instruction} to stList, op __ : List{Instruction} List{Instruction} -> List{Instruction} 
+															to (_;_) [prec 121 format (d r os d)])) .
+ 		
+ 	op fetch : Address -> Instruction [ctor] .
+	op flush : Address -> Instruction [ctor] .
+	op flush : -> Instruction [ctor] .
+	op read : Reference -> Instruction [ctor] .
+	op write : Reference -> Instruction [ctor] .
+	op readBl : Reference -> Instruction [ctor] .
+	op writeBl : Reference -> Instruction [ctor] .
+	op RdX : Address -> Instruction [ctor] .
+	op Rd : Address -> Instruction [ctor] .
+	op lock : Reference -> Instruction [ctor] .
+	op lockBl : Reference -> Instruction [ctor] .
+	op unlock : Reference -> Instruction [ctor] .
+	op unlockBl : Reference -> Instruction [ctor] .
+	
+	op commit : -> Instruction [ctor] .
+	op commit : Reference -> Instruction [ctor] .
+	
+	op Spawn : Qid -> Instruction [ctor] .
+	op Skip : -> Instruction [ctor] .
+ 														
+    op malloc : Set{String} -> Instruction [ctor] .
+    
+    op _* : stList -> Instruction[ctor] .
+ 	op _*_ : stList Int -> Instruction[ctor] .
+ 	op _?_  : stList stList -> Instruction [ctor comm] . 
+    
+ 					
+endm 
+
+ 
+

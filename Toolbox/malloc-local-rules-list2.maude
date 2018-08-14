@@ -1,0 +1,434 @@
+
+
+
+load malloc-local-rules-list1.maude 
+
+mod RULES-2 is
+   inc RULES-1 .
+   op LockSch : Configuration -> Configuration .
+   op UnlockSch : Configuration -> Configuration .
+   op lock : Configuration task{Qid, stList} -> Configuration .
+   op headRst : Object -> stList .
+   op generateLoc : Oid -> Object .
+   op redu : Configuration -> Object .
+   
+    var T : Qid .
+	var Tids : QidSet .
+	vars Sch' Ta C1 C2 Me Tbl MT Acc' : Oid .
+	var st : Set{Status} .
+	var Ca : Cache{Int, MemoryMap} .
+	vars   y  z  size x' y' i j p p' N,lm : Int .
+	var k : Nat .
+	var x : Address .
+	var r : String .
+	var s s' : Status .
+	vars addr addrLoc : Tbl{Reference, Address} .
+	vars rst d rst' Rs Rs' : stList .
+	var mapPol : MapPolicy .
+	var task : task{Qid, stList} .
+	vars M M' mapSet : MemoryMap .
+	vars REST config0 : Configuration .
+	var ReSet : OidSet .
+	var Re : Instruction .
+	vars hp mp m h ic hp' ic' mp' : Float .
+	var MTbl : MemTable{Oid, AddressPair} .
+	var mt : AddressPair .
+	vars OList1 OList2 : List{Object} .
+	var stRef : Set{String} .
+	var Obj obj : Object .
+
+ceq {< Sch' : Qu | TidSet: empty > OList1 config0} = {redu(config0)}  if allRstNil(OList1) == true .
+eq {redu(< Acc' : AccP | Penalty: p, Count: k > 
+         < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p', Range: mt > config0)} =
+    {redu(< Acc' : AccP | Penalty: p + p', Count: k > config0 )} .
+ eq {redu(< Acc' : AccP | Penalty: p, Count: k > config0 )} =  {< Acc' : AccP | Penalty: p, Count: k >} [owise] . 
+*** eq redu(< Acc' : AccP | Penalty: p > ) = < Acc' : AccP | Penalty: p > . 
+ 
+  
+
+rl [Spawn] : < Sch' : Qu | TidSet: Tids > 
+             	  ( < C1 : CR | Rst: (Spawn(T) ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+                  =>
+                 < Sch' : Qu | TidSet: (Tids, T) > 
+                 (OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > ) .
+ 
+ ***rl [Choice] :  < C1 : CR | Rst: ((Rs ? Rs') ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2
+    ***           =>
+       ***         < C1 : CR | Rst: (Rs ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2 .
+               
+ 
+                 
+crl [Repeat-Bounded-1] :  (< C1 : CR | Rst: ((rst' * i) ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+							< Tbl : TBL | Addr: addr, LM: lm >
+                         =>
+                         < Tbl : TBL | Addr: addr, LM: lm >
+                      (< C1 : CR | Rst: (rst' ; (rst' * (i - 1)) ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+                        if i > 0 .
+	
+crl [Repeat-Bounded-Ignore] : ( < C1 : CR | Rst: ((rst' * i) ; rst), InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+						< Tbl : TBL | Addr: addr, LM: lm >
+                       =>
+                       < Tbl : TBL | Addr: addr, LM: lm >
+                         ( < C1 : CR | Rst:  rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2 ) if i == 0 .	
+                         
+   
+crl [change-pos] : < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+                 < Tbl : TBL | Addr: addr, LM: lm >
+              < Sch' : Qu | TidSet: Tids > 
+		   (< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)	
+	   =>
+			   < Sch' : Qu | TidSet: Tids > 
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				   < Tbl : TBL | Addr: addr, LM: lm >
+				  (OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > ) if deadLock(rst, d, Ca, addr, Tids, 
+				  (< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)) .
+
+	
+***(crl [Scheduler-FIFO] :   < Sch' : Qu | TidSet: (Tids, T) > 
+               	  < Ta : Task | Data: task >
+			     (< C1 : CR | Rst: nil, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+			     =>
+			         < Sch' : Qu | TidSet: Tids > 
+				     < Ta : Task | Data: task >  
+				      < Loc(C1) : LocMem | Add: empty > 
+				      (OList2 | < C1 : CR | Rst: ((task[T]) ; commit), InCount: ic, HitPer: hp, MissPer: mp >) if task[T] =/= undefined .
+		)
+		
+crl [Scheduler-Random] : < Sch' : Qu | TidSet: Tids > 
+		                 < Ta : Task | Data: task >
+		                   (< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList1)
+		                  < Acc' : AccP | Penalty: p, Count: k >
+			             => 
+			              < Acc' : AccP | Penalty: p, Count: k + 1 >
+		                  < Ta : Task | Data: task >   
+		                  lock(< Sch' : Qu | TidSet: Tids > 
+		                  changeList(( < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList1 ), (random(k) rem size(OList1) + 1)), task) 
+		                  if Tids =/= empty .
+
+
+eq lock( < Sch' : Qu | TidSet: (Tids, T) > 
+(< C1 : CR | Rst: nil, InCount: ic, HitPer: hp, MissPer: mp > | OList2), task) = 
+< Loc(C1) : LocMem | Add: empty >
+ < Sch' : Qu | TidSet: Tids > 
+ (OList2 | < C1 : CR | Rst: (task[T] ; commit), InCount: ic, HitPer: hp, MissPer: mp > ) .
+	 
+ceq lock(< Sch' : Qu | TidSet: Tids > (< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2), task) = 
+        < Sch' : Qu | TidSet: Tids > (< C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2) 
+        if (rst =/= nil)  .
+        
+***  eq lock(< Loc(C1) : LocMem | Add: empty > config0, task) = 	< Loc(C1) : LocMem | Add: empty > config0 .
+		                  
+		                   
+		                  
+		                  
+						  ***< Loc(C2) : LocMem | Add: empty >
+						  ***if headRst( changeList(( OList1 ), (random(counter) rem size( OList1 ) + 1)))) .
+						  
+						  ***(
+						  ( OList2 | < C2 : CR | Rst: ((task[T]) ; commit ), InCount: ic, HitPer: hp, MissPer: mp > )
+						  if x := random(counter) /\
+						  ( < C2 : CR | Rst: nil, InCount: ic, HitPer: hp, MissPer: mp > | OList2 ) := 
+							 changeList(( OList1 ), (x rem 3)) .)
+ crl [Lock-1] : 
+                 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				< Tbl : TBL | Addr: addr, LM: lm > 
+                (< C1 : CR | Rst: lock(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				   =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 < CaId(C1) : Cache | CM: updateValue(Ca, selectAddr(addr, addrLoc, r), mapPol, size, (1, mo), (0, sh)), D: d, CacheSz: size, 
+				 Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > 
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				  (broadcast RdX(selectAddr(addr, addrLoc, r)) from CaId(C1))
+				 if valStatusPair(Ca, addr[ref(r)]) == (0, sh) or valStatusPair(Ca, addrLoc[ref(r)]) == (0, sh) .				      
+
+
+  crl [Lock-2] : 
+				< CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				< Tbl : TBL | Addr: addr, LM: lm >
+				( < C1 : CR | Rst: lock(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				     =>
+				    < Loc(C1) : LocMem | Add: addrLoc >
+				 < Tbl : TBL | Addr: addr, LM: lm >
+				 < CaId(C1) : Cache | CM: updateValue(Ca, selectAddr(addr, addrLoc, r), mapPol, size, (1, mo), (0, mo)), D: d, CacheSz: size, 
+				 Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				 if valStatusPair(Ca, addr[ref(r)]) == (0, mo) or valStatusPair(Ca, addrLoc[ref(r)]) == (0, mo) .
+				 	
+				 
+crl [LockBlock-1] : 
+					 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				     < Tbl : TBL | Addr: addr, LM: lm >
+				     (< C1 : CR | Rst: lock(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2 ) 
+				     < Loc(C1) : LocMem | Add: addrLoc >
+				     =>
+				    < Loc(C1) : LocMem | Add: addrLoc >
+				     < Tbl : TBL | Addr: addr, LM: lm >
+	                  < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt >
+				     ( OList2 | < C1 : CR | Rst: lockBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >  )
+				     (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1))
+				       if validStatus(Ca, addr[ref(r)]) == false and validStatus(Ca, addrLoc[ref(r)]) == false .
+				  
+    crl [LockBlock-2] :  
+					 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				     < Tbl : TBL | Addr: addr, LM: lm >
+				     ( < C1 : CR | Rst: lockBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				     < Loc(C1) : LocMem | Add: addrLoc >
+				     =>
+				    < Loc(C1) : LocMem | Add: addrLoc >
+				     < Tbl : TBL | Addr: addr, LM: lm >
+				     < CaId(C1) : Cache | CM: updateValue(Ca, selectAddr(addr, addrLoc, r), mapPol, size, (1, mo), (0, sh)), 
+				        D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p + 1, Range: mt >
+				     ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+				          (broadcast RdX(selectAddr(addr, addrLoc, r)) from CaId(C1)) 
+				       if valStatusPair(Ca, addr[ref(r)]) == (0, sh) or valStatusPair(Ca, addrLoc[ref(r)]) == (0, sh) .	
+				  
+    crl [LockBlock-3] :
+					 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				     < Tbl : TBL | Addr: addr, LM: lm >
+				      ( < C1 : CR | Rst: lockBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				     < Loc(C1) : LocMem | Add: addrLoc >
+				     =>
+				    < Loc(C1) : LocMem | Add: addrLoc >
+				     < Tbl : TBL | Addr: addr, LM: lm >
+				     < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt >
+				     ( OList2 | < C1 : CR | Rst: lockBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				     (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1))
+				       if validStatus(Ca, addr[ref(r)]) == false and validStatus(Ca, addrLoc[ref(r)]) == false and 
+				       (occurs(fetch(selectAddr(addr, addrLoc, r)), d)) == false  .
+				       
+  
+  crl [Unlock-1] : 
+				   < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				   < Tbl : TBL | Addr: addr, LM: lm >
+				   ( < C1 : CR | Rst: unlock(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				   < Loc(C1) : LocMem | Add: addrLoc >
+				     =>
+				   < Loc(C1) : LocMem | Add: addrLoc >
+				   < Tbl : TBL | Addr: addr, LM: lm >
+				   < CaId(C1) : Cache | CM: updateValue(Ca, selectAddr(addr, addrLoc, r), mapPol, size, (0, mo), (1, mo)), 
+				     D: d, CacheSz: size, Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt >
+				   ( OList2 |  < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				   if valStatusPair(Ca, addr[ref(r)]) == (1, mo) or valStatusPair(Ca, addrLoc[ref(r)]) == (1, mo) . 	
+  
+    crl [Unlock-2] : 
+				   < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				   < Tbl : TBL | Addr: addr, LM: lm >
+				   (< C1 : CR | Rst: unlock(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				   < Loc(C1) : LocMem | Add: addrLoc >
+				     =>
+				   < Loc(C1) : LocMem | Add: addrLoc >
+				   < Tbl : TBL | Addr: addr, LM: lm >
+				   < CaId(C1) : Cache | CM: updateValue(Ca, selectAddr(addr, addrLoc, r), mapPol, size, (0, mo), (1, sh)), 
+				        D: d, CacheSz: size, Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt >
+				   ( OList2 | < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				   (broadcast RdX(selectAddr(addr, addrLoc, r)) from CaId(C1))
+				   if valStatusPair(Ca, addr[ref(r)]) == (1, sh) or valStatusPair(Ca, addrLoc[ref(r)]) == (1, sh) . 
+  
+  crl [UnlockBlock-1] : 
+					    < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				        < Tbl : TBL | Addr: addr, LM: lm >
+				        ( < C1 : CR | Rst: unlock(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				         < Loc(C1) : LocMem | Add: addrLoc >
+				        =>
+				        < Loc(C1) : LocMem | Add: addrLoc >
+				        < Tbl : TBL | Addr: addr, LM: lm >
+				        < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt >
+				        ( OList2 | < C1 : CR | Rst: unlockBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				        (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1))
+				         if validStatus(Ca, addr[ref(r)]) == false and validStatus(Ca, addrLoc[ref(r)]) == false  .			       					  			  	
+  	
+  crl [UnlockBlock-2] : 
+				        < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				        < Tbl : TBL | Addr: addr, LM: lm >
+				        ( < C1 : CR | Rst: unlockBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				        < Loc(C1) : LocMem | Add: addrLoc >
+				        =>
+				        < Loc(C1) : LocMem | Add: addrLoc >
+				        < Tbl : TBL | Addr: addr, LM: lm >
+				        < CaId(C1) : Cache | CM: updateValue(Ca, selectAddr(addr, addrLoc, r), mapPol, size, (0, mo), (1, sh)), 
+				        D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p + 1, Range: mt >
+				        (OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+				        (broadcast RdX(selectAddr(addr, addrLoc, r)) from CaId(C1))
+				          if valStatusPair(Ca, addr[ref(r)]) == (1, sh) or valStatusPair(Ca, addrLoc[ref(r)]) == (1, sh) . 	
+  				       					  			  	
+  crl [PrRd-1] : ( < C1 : CR | Rst: read(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > if validStatus(Ca, addr[ref(r)]) == true or validStatus(Ca, addrLoc[ref(r)]) == true .       					  			  	
+   
+   crl [PrRd-2] : ( < C1 : CR | Rst: read(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: readBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt >	
+				 < Tbl : TBL | Addr: addr, LM: lm > (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1))  
+				 if validStatus(Ca, addr[ref(r)]) == false and validStatus(Ca, addrLoc[ref(r)]) == false . 
+      
+    crl [PrRd-3] : ( < C1 : CR | Rst: readBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p + 1, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > if validStatus(Ca, addr[ref(r)]) == true or validStatus(Ca, addrLoc[ref(r)]) == true .  
+        
+     crl [PrRd-4] : ( < C1 : CR | Rst: readBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >			 
+				 ( OList2 | < C1 : CR | Rst: readBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt >	
+				 < Tbl : TBL | Addr: addr, LM: lm > (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1))  
+				 if validStatus(Ca, addr[ref(r)]) == false and validStatus(Ca, addrLoc[ref(r)]) == false and 
+				       (occurs(fetch(selectAddr(addr, addrLoc, r)), d)) == false .
+	
+	crl [PrWr-1] :  ( < C1 : CR | Rst: write(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2) 
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > 
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >) 
+				 < CaId(C1) : Cache | CM: writeUpdate(Ca, selectAddr(addr, addrLoc, r)), D: d, CacheSz: size, Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt > 
+				 < Tbl : TBL | Addr: addr, LM: lm > if selectStatus(Ca, addr[ref(r)]) == mo or selectStatus(Ca, addrLoc[ref(r)]) == mo .   
+ 				  
+    crl [PrWr-2] : ( < C1 : CR | Rst: write(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: writeUpdate(Ca, selectAddr(addr, addrLoc, r)), D: d, CacheSz: size, Assoc: mapPol, Hits: h + 1.0, Miss: m, Penalty: p + 1, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > (broadcast RdX(selectAddr(addr, addrLoc, r)) from CaId(C1)) 
+				 if selectStatus(Ca, addr[ref(r)]) == sh or selectStatus(Ca, addrLoc[ref(r)]) == sh . 
+	
+	crl [PrWr-3] : ( < C1 : CR | Rst: write(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2) 
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > 
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: writeBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >) 
+				 < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt > 	
+				 < Tbl : TBL | Addr: addr, LM: lm >  (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1)) 
+				 if validStatus(Ca, addr[ref(r)]) == false and validStatus(Ca, addrLoc[ref(r)]) == false . 			 
+	
+	crl [PrWr-4] : ( < C1 : CR | Rst: writeBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: writeUpdate(Ca, selectAddr(addr, addrLoc, r)), D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p + 1, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > (broadcast RdX(selectAddr(addr, addrLoc, r)) from CaId(C1)) 
+				 if selectStatus(Ca, addr[ref(r)]) == sh or selectStatus(Ca, addrLoc[ref(r)]) == sh . 
+     
+    crl [PrWr-5] : ( < C1 : CR | Rst: writeBl(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: writeBl(r) ; rst, InCount: ic + 1.0, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d ; fetch(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m + 1.0, Penalty: p, Range: mt >	
+				 < Tbl : TBL | Addr: addr, LM: lm > (broadcast Rd(selectAddr(addr, addrLoc, r)) from CaId(C1)) 
+				 if validStatus(Ca, addr[ref(r)]) == false and (occurs(fetch(selectAddr(addr, addrLoc, r)), d)) == false and 
+				 validStatus(Ca, addrLoc[ref(r)]) == false .   
+				 
+	
+	
+   crl [Commit-1] : ( < C1 : CR | Rst: commit(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				< Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d ; flush(selectAddr(addr, addrLoc, r)), CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > if selectStatus(Ca, addr[ref(r)]) == mo or selectStatus(Ca, addrLoc[ref(r)]) == mo . 	
+				 
+	crl [Commit-2] : ( < C1 : CR | Rst: commit(r) ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm >	
+				< Loc(C1) : LocMem | Add: addrLoc >
+				 =>
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: hp, MissPer: mp >)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Tbl : TBL | Addr: addr, LM: lm > if selectStatus(Ca, addr[ref(r)]) =/= mo and selectStatus(Ca, addrLoc[ref(r)]) =/= mo . 				 		   
+  	
+  
+   rl [CommitAll-1] : ( < C1 : CR | Rst: commit ; rst, InCount: ic, HitPer: hp, MissPer: mp > | OList2)
+				 < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+				 < Loc(C1) : LocMem | Add: addrLoc >
+				 < Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+				  =>
+				 ( OList2 | < C1 : CR | Rst: rst, InCount: ic, HitPer: Per(h, ic), MissPer: Per(m, ic) >)
+				 < CaId(C1) : Cache | CM: freeMem(Ca, addrLoc), D: d ; flush, CacheSz: size, Assoc: mapPol, 
+				 Hits: h, Miss: m, Penalty: p, Range: freeRan(mt, addrLoc) > 
+				 < Me : MM | M: freeMe(mapSet, addrLoc), fetchCount: i, Penalty: p' > .
+				 				 
+	rl [CommitAll-2] : 	< CaId(C1) : Cache | CM: Ca, D: flush ; d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+	                    < Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+	                    =>		 
+				 	    < CaId(C1) : Cache | CM: commitCache(Ca), D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+	                    < Me : MM | M: commitMemory(Ca, mapSet), fetchCount: i, Penalty: p' > .
+   				 	          					 			                  
+	crl [Fetch1] :  < CaId(C1) : Cache | CM: Ca, D: fetch(x) ; d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+	          		< Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+					=>
+	          		if local(x, mt) then 
+	          		< CaId(C1) : Cache | CM: fetchUpdateLine(x, mapSet, Ca, mapPol, size), D: d, CacheSz: size, 
+	          		Assoc: mapPol, Hits: h, Miss: m, Penalty: p + 100, Range: mt >
+	          		< Me : MM | M: mapSet, fetchCount: i + 1, Penalty: p' + 100 >
+	          		else
+	          		 < CaId(C1) : Cache | CM: fetchUpdateLine(x, mapSet, Ca, mapPol, size), D: d, CacheSz: size, 
+	          		Assoc: mapPol, Hits: h, Miss: m, Penalty: p + 1000, Range: mt > 
+	          		< Me : MM | M: mapSet, fetchCount: i + 1, Penalty: p' + 1000 >
+	          		fi
+	          	
+	          		if (allModified(cacheLineSet(Ca,  mapPol, size, x), mapPol) == false and (selectStatus(mapSet, x) == sh)) .
+					
+	
+	crl [Fetch2] :  < CaId(C1) : Cache | CM: Ca, D: fetch(x) ; d, CacheSz: size, Assoc: Assoc(j), Hits: h, Miss: m, Penalty: p, Range: mt >
+	          		< Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+	          		=>
+	          		< Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+	          		< CaId(C1) : Cache | CM: Ca, D: flush(LineToFlush(Ca, x rem(size quo j))) ; fetch(x) ; d, 
+	          		CacheSz: size, Assoc: Assoc(j), Hits: h, Miss: m, Penalty: p, Range: mt > 
+	          		if allModified(cacheLineSet(Ca,  Assoc(j), size, x), Assoc(j)) == true .			  
+ 	
+ 	rl [Flush] : 	< CaId(C1) : Cache | CM: (Ca, N |-> (x |-> (y', mo), M)), D: flush(x) ; d, CacheSz: size, 
+ 					Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+	          		< Me : MM | M: (x |-> (y, inv), mapSet), fetchCount: i, Penalty: p' >
+					=> 
+	          		< Me : MM | M: (x |-> (y', sh), mapSet), fetchCount: i, Penalty: p' >
+	          		< CaId(C1) : Cache | CM: (Ca, N |-> (x |-> (y', sh), M)), D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > .
+	          			  
+	crl [Flush-Ignore] : < CaId(C1) : Cache | CM: Ca, D: flush(x) ; d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt >
+	          			 < Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+					      => 
+	          		     < Me : MM | M: mapSet, fetchCount: i, Penalty: p' >
+	          		     < CaId(C1) : Cache | CM: Ca, D: d, CacheSz: size, Assoc: mapPol, Hits: h, Miss: m, Penalty: p, Range: mt > 
+	          		     if selectStatus(Ca, x) =/= mo .    
+				     
+	  
+endm	
+	
