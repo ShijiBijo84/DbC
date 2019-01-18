@@ -35,7 +35,7 @@ This Readme contains information concerning the use of the Maude implementation 
       
  * How to simulate the this Maude model
    ---------------------------------------  
-        Invoke Maude interpreter.Then type 'load locks-test-list.maude' to load the    configuration with list of cores. 
+        Invoke Maude interpreter.Then type 'load malloc-test-list.maude' to load the    configuration with list of cores. 
         The  CORE-TEST module in this file will bring all other modules in Maude user-interface. 
         Then the 'frew {init(exp1, k)} .' command will simulate the initial configuration {exp1} and return the final state.
         The init function will randomly pick a core from the list and push to the head of the list of cores. 
