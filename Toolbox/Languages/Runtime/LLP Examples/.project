@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>LLP Examples</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>no.uio.ifi.llp.resource.llp.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>no.uio.ifi.llp.resource.llpm.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>no.uio.ifi.llp.resource.llp.nature</nature>
+		<nature>no.uio.ifi.llp.resource.llpm.nature</nature>
+	</natures>
+</projectDescription>

@@ -1,0 +1,4 @@
+'main |-> (Spawn('T1); Spawn('T2)),
+	'T1 |-> (write('a0); write('a6); write('a12)),
+	'T2 |-> (lock('a18); (write('a0); write('a6); write('a12); unlock('a18)) * 10),
+	'T3 |-> (lock('a18); (write('a12)) || (read('a3)))

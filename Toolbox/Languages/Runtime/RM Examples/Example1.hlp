@@ -1,0 +1,16 @@
+Program Example
+	Variables a := 2, b, c.
+	
+	Task T1
+		c := (a + 1) * a.
+		c := 3.
+		b := c * 3.
+	End.
+End.
+
+
+//w(a); w(b); w(c)
+
+//r(a); r(a); w(c)
+
+//r(c); w(b)

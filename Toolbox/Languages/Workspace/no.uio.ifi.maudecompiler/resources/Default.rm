@@ -1,0 +1,18 @@
+device {
+	cacheSize: 5;
+	localMemory: 0 - 10;
+}
+
+device {
+	cacheSize: 5;
+	localMemory: 11 - 20;
+}
+
+device {
+	cacheSize: 5;
+	localMemory: 21 - 30;
+}
+
+memory {
+	size: 30;
+}

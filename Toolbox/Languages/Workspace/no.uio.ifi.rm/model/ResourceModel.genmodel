@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/no.uio.ifi.rm/src-gen" editDirectory="/no.uio.ifi.rm.edit/src-gen"
+    editorDirectory="/no.uio.ifi.rm.editor/src-gen" modelPluginID="no.uio.ifi.rm"
+    modelName="ResourceModel" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    testsDirectory="/no.uio.ifi.rm.tests/src-gen" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="8.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>ResourceModel.ecore</foreignModel>
+  <genPackages prefix="RM" basePackage="no.uio.ifi" disposableProviderFactory="true"
+      ecorePackage="ResourceModel.ecore#/">
+    <genClasses ecoreClass="ResourceModel.ecore#//ResourceModel">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ResourceModel.ecore#//ResourceModel/devices"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ResourceModel.ecore#//ResourceModel/memory"/>
+    </genClasses>
+    <genClasses ecoreClass="ResourceModel.ecore#//Device">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ResourceModel.ecore#//Device/cacheSize"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ResourceModel.ecore#//Device/localMemoryCellReference"/>
+    </genClasses>
+    <genClasses ecoreClass="ResourceModel.ecore#//Memory">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ResourceModel.ecore#//Memory/size"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference ResourceModel.ecore#//Memory/variableReferences"/>
+    </genClasses>
+    <genClasses ecoreClass="ResourceModel.ecore#//MemoryCellReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ResourceModel.ecore#//MemoryCellReference/startCellIndex"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ResourceModel.ecore#//MemoryCellReference/endCellIndex"/>
+    </genClasses>
+    <genClasses ecoreClass="ResourceModel.ecore#//VariableReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ResourceModel.ecore#//VariableReference/variable"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ResourceModel.ecore#//VariableReference/memoryCellIndex"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

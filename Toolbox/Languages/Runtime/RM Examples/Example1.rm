@@ -1,0 +1,19 @@
+device {
+	cacheSize: 5;
+	localMemory: 0 - 10;
+}
+
+device {
+	cacheSize: 7;
+	localMemory: 11 - 20;
+}
+
+memory {
+	size: 20;
+	
+	references {
+		x1 : 1;
+		x2 : 5;
+		x3 : 7;
+	}
+}

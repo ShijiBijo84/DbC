@@ -1,0 +1,58 @@
+Program Example
+	Variables x1, x2, x3,
+			  y1, y2, y3,
+			  z1, z2, z3.
+
+	Task T1
+		Variables i1.
+		
+		For i1 := 1 To 20 Do
+			Synchronized(x3)
+				x1 := x3 + 1.
+			End.
+			
+			Synchronized(y1)
+				y1 := 6.
+			End.
+			
+			Synchronized(z1, z3)
+				z1 := z3 + 4.
+			End.
+		End.
+	End.
+	
+	Task T2
+		Variables i2.
+		
+		For i2 := 1 To 30 Do
+			Synchronized(x3)
+				x2 := x3 + 2.
+			End.
+			
+			Synchronized(y1)
+				y2 := y1.
+			End.
+			
+			x2 := 7.
+		End.
+	End.
+	
+	Task T3
+		Variables i3.
+		
+		For i3 := 1 To 50 Do
+			Synchronized(x3)
+				x3 := 5.
+			End.
+			
+			y3 := 1.
+			
+			Synchronized(z1, z3)
+				z3 := z1 + 1. 
+			End.
+		End.
+	End.
+	
+	Schedule(T1, T2, T3).
+End.
+

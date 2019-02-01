@@ -1,0 +1,21 @@
+Program Example
+	Variables a := 2, b := a * 2, c, d, i.
+	
+	Task T1
+//		a := b * c.
+//		If (a > b) Then
+//			c := a + b.
+//		Else
+//			d := b - a.
+//		End.
+//		
+//		Synchronized (a, b, c)
+//			a := b + c.
+//		End.
+	
+		For i := 1 To 10 Do
+			b := b * 2.
+		End.
+	End.
+End.
+

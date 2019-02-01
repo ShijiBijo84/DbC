@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/no.uio.ifi.llp/src-gen" editDirectory="/no.uio.ifi.llp.edit/src-gen"
+    editorDirectory="/no.uio.ifi.llp.editor/src-gen" modelPluginID="no.uio.ifi.llp"
+    modelName="LLP" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    testsDirectory="/no.uio.ifi.llp.tests/src-gen" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="8.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>LLP.ecore</foreignModel>
+  <genPackages prefix="LLP" basePackage="no.uio.ifi" disposableProviderFactory="true"
+      ecorePackage="LLP.ecore#/">
+    <genClasses ecoreClass="LLP.ecore#//LowLevelProgram">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//LowLevelProgram/tasks"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//LowLevelProgram/mainBlock"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="LLP.ecore#//DataAccessPattern"/>
+    <genClasses ecoreClass="LLP.ecore#//Task">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LLP.ecore#//Task/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//Task/block"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//Block">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//Block/dataAccessPatterns"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//ReadInstruction"/>
+    <genClasses ecoreClass="LLP.ecore#//WriteInstruction"/>
+    <genClasses image="false" ecoreClass="LLP.ecore#//IOInstruction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//IOInstruction/memoryReference"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//MemoryReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LLP.ecore#//MemoryReference/address"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="LLP.ecore#//CacheInstruction"/>
+    <genClasses ecoreClass="LLP.ecore#//CommitInstruction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//CommitInstruction/memoryReference"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//LockInstruction"/>
+    <genClasses ecoreClass="LLP.ecore#//UnlockInstruction"/>
+    <genClasses ecoreClass="LLP.ecore#//SpawnInstruction">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference LLP.ecore#//SpawnInstruction/task"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//ControlFlowBranchingInstruction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//ControlFlowBranchingInstruction/leftHandSideBlock"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//ControlFlowBranchingInstruction/rightHandSideBlock"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//RepetitionInstruction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//RepetitionInstruction/block"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute LLP.ecore#//RepetitionInstruction/numberOfRepetitions"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="LLP.ecore#//ControlFlowInstruction"/>
+    <genClasses ecoreClass="LLP.ecore#//SkipInstruction"/>
+    <genClasses image="false" ecoreClass="LLP.ecore#//SynchronisationInstruction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//SynchronisationInstruction/memoryReference"/>
+    </genClasses>
+    <genClasses ecoreClass="LLP.ecore#//ParenthesisInstruction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference LLP.ecore#//ParenthesisInstruction/block"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

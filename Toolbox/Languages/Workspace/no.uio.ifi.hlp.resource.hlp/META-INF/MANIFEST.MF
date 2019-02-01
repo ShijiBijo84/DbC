@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: EMFText Parser Plugin: hlp
+Bundle-SymbolicName: no.uio.ifi.hlp.resource.hlp;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: Software Technology Group - TU Dresden Germany
+Require-Bundle: org.eclipse.core.runtime;resolution:=optional,
+  org.eclipse.core.resources;resolution:=optional,
+  org.eclipse.emf.ecore,
+  org.eclipse.emf.ecore.change,
+  org.eclipse.emf.validation;resolution:=optional,
+  org.emftext.access;resolution:=optional,
+  org.emftext.commons.antlr3_4_0,
+  no.uio.ifi.hlp
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: no.uio.ifi.hlp.resource.hlp,
+  no.uio.ifi.hlp.resource.hlp.analysis,
+  no.uio.ifi.hlp.resource.hlp.mopp,
+  no.uio.ifi.hlp.resource.hlp.debug,
+  no.uio.ifi.hlp.resource.hlp.launch,
+  no.uio.ifi.hlp.resource.hlp.grammar,
+  no.uio.ifi.hlp.resource.hlp.util
+Bundle-Activator: no.uio.ifi.hlp.resource.hlp.mopp.HlpPlugin

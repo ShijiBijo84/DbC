@@ -1,0 +1,25 @@
+memory {
+	size: 20;
+
+	references {
+		x1 :  1; x2 :  1; x3 :  1; i1 :  2; l1 :  3;
+		y1 :  7; y2 :  7; y3 :  7; i2 :  8; l2 :  9;
+		z1 : 13; z2 : 13; z3 : 13; i3 : 14; l3 : 15;
+		l4 : 18;
+	}
+}
+
+device {
+	cacheSize: 5;
+	localMemory: 0 - 5;
+}
+
+device {
+	cacheSize: 5;
+	localMemory: 6 - 11;
+}
+
+device {
+	cacheSize: 5;
+	localMemory: 12 - 17;
+}

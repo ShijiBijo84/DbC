@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Maude Compiler
+Bundle-SymbolicName: no.uio.ifi.maudecompiler
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: no.uio.ifi.llp;visibility:=reexport,
+ no.uio.ifi.rm;visibility:=reexport,
+ no.uio.ifi.llp.resource.llpm,
+ de.christophseidl.util.ecore
+Export-Package: no.uio.ifi.maudecompiler

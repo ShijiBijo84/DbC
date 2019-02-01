@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="llp" nsURI="http://uio.no/ifi/llp/1.0" nsPrefix="llp">
+  <eClassifiers xsi:type="ecore:EClass" name="LowLevelProgram">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
+        eType="#//Task" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mainBlock" lowerBound="1"
+        eType="#//Block" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DataAccessPattern" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" lowerBound="1" eType="#//Block"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Block">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dataAccessPatterns" upperBound="-1"
+        eType="#//DataAccessPattern" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ReadInstruction" eSuperTypes="#//IOInstruction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="WriteInstruction" eSuperTypes="#//IOInstruction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="IOInstruction" abstract="true" eSuperTypes="#//DataAccessPattern">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="memoryReference" lowerBound="1"
+        eType="#//MemoryReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MemoryReference">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="address" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CacheInstruction" abstract="true" eSuperTypes="#//DataAccessPattern"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CommitInstruction" eSuperTypes="#//CacheInstruction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="memoryReference" eType="#//MemoryReference"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="LockInstruction" eSuperTypes="#//SynchronisationInstruction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="UnlockInstruction" eSuperTypes="#//SynchronisationInstruction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SpawnInstruction" eSuperTypes="#//DataAccessPattern">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="task" lowerBound="1" eType="#//Task"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ControlFlowBranchingInstruction" eSuperTypes="#//ControlFlowInstruction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="leftHandSideBlock" lowerBound="1"
+        eType="#//Block" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rightHandSideBlock" lowerBound="1"
+        eType="#//Block" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RepetitionInstruction" eSuperTypes="#//ControlFlowInstruction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" lowerBound="1" eType="#//Block"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="numberOfRepetitions" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ControlFlowInstruction" abstract="true"
+      eSuperTypes="#//DataAccessPattern"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SkipInstruction" eSuperTypes="#//ControlFlowInstruction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronisationInstruction" abstract="true"
+      eSuperTypes="#//DataAccessPattern">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="memoryReference" lowerBound="1"
+        eType="#//MemoryReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ParenthesisInstruction" eSuperTypes="#//ControlFlowInstruction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" lowerBound="1" eType="#//Block"
+        containment="true"/>
+  </eClassifiers>
+</ecore:EPackage>

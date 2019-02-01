@@ -1,0 +1,271 @@
+***load /Users/shiji/PMA/papers/upscale/implementations/Locks/MSI-Locks/locks-local-rules-list2.maude
+
+load locks-local-rules-list2.maude    
+
+mod CORE-TEST is 
+
+	ex RULES-2 .
+	ops C1 C2 C3 C4 Tbl M Sch Ta MT : -> Oid [ctor] .
+	ops exp1 exp1Lock exp2 exp2Lock exp3 exp3Lock exp4 exp4Lock exp5 exp5Lock exp6 exp6Lock : -> Configuration .
+	
+	
+ 				     	
+eq exp1 =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  	
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (read(1) ; write(2)) * 20,
+             					 'T2 |-> (write(3) ; write(1)) * 30,
+             					  'T3 |-> (write(3) ; write(1)) * 30 >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(1) |-> 1,  ref(2) |-> 1, ref(3) |-> 3, ref(18) |-> 18 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 18 |-> (0,sh), fetchCount: 0, Penalty: 0 > .				     
+
+
+eq exp1Lock =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  	
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2)),
+             					 'T1 |-> (lock(18) ; (read(1) ; write(2)) * 20 ; unlock(18)),
+             					 'T2 |-> (lock(18) ; (write(3) ; write(1)) * 30 ; unlock(18)) >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(1) |-> 1,  ref(2) |-> 1, ref(3) |-> 3, ref(18) |-> 18 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 18 |-> (0,sh), fetchCount: 0, Penalty: 0 > .
+				  
+eq exp2 =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  	
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2)),
+             					 'T1 |-> (read(1) ; write(2)) * 20,
+             					 'T2 |-> (write(3) ; write(1)) * 30  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(1) |-> 1,  ref(2) |-> 2, ref(3) |-> 2, ref(18) |-> 18 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 18 |-> (0,sh), fetchCount: 0, Penalty: 0 > .				  				        			     			     			     			     
+
+eq exp2Lock =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  	
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2)),
+             					 'T1 |-> (lock(18) ; (read(1) ; write(2)) * 20 ; unlock(18)),
+             					 'T2 |-> (lock(18) ; (write(3) ; write(1)) * 30 ; unlock(18))  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(1) |-> 1,  ref(2) |-> 2, ref(3) |-> 2, ref(18) |-> 18 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 18 |-> (0,sh), fetchCount: 0, Penalty: 0 > .
+
+eq exp3 =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2)),
+             					 'T1 |-> (read(1) ; write(2)) * 20,
+             					 'T2 |-> (write(3) ; write(1)) * 30  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(1) |-> 1,  ref(2) |-> 1, ref(3) |-> 1, ref(18) |-> 18 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 18 |-> (0,sh), fetchCount: 0, Penalty: 0 > .				  				        			     			     			     			     
+
+eq exp3Lock =  
+	             (< C1 : CR | Rst: (lock(18) ; (read(1) ; write(2)) * 20 ; unlock(18)), InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: (lock(18) ; (write(3) ; write(1)) * 30 ; unlock(18)), InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  	
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2)),
+             					 'T1 |-> (lock(18) ; (read(1) ; write(2)) * 20 ; unlock(18)),
+             					 'T2 |-> (lock(18) ; (write(3) ; write(1)) * 30 ; unlock(18))  >
+             					 
+	              < Sch : Qu | TidSet: empty >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(1) |-> 1,  ref(2) |-> 1, ref(3) |-> 1, ref(18) |-> 18 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 18 |-> (0,sh), fetchCount: 0, Penalty: 0 > .
+				  
+eq exp4 =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (write(0) ; write(3) ; write(6)) * 20,
+             					 'T2 |-> (write(1) ; write(4) ; write(7)) * 20,
+             					 'T3 |-> (write(2) ; write(5) ; write(8)) * 20  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(0) |-> 0,  ref(1) |-> 0, ref(2) |-> 0, 
+				  					  ref(3) |-> 1,  ref(4) |-> 1, ref(5) |-> 1, 
+				  					  ref(6) |-> 2,  ref(7) |-> 2, ref(8) |-> 2,
+				  					  ref(19) |-> 19 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 19 |-> (0,sh), fetchCount: 0, Penalty: 0 > .					  
+
+eq exp4Lock =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (lock(19) ; (write(0) ; write(3) ; write(6)) * 20 ; unlock(19)),
+             					 'T2 |-> (lock(19) ; (write(1) ; write(4) ; write(7)) * 20 ; unlock(19)),
+             					 'T3 |-> (lock(19) ; (write(2) ; write(5) ; write(8)) * 20 ; unlock(19))  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(0) |-> 0,  ref(1) |-> 0, ref(2) |-> 0, 
+				  					  ref(3) |-> 1,  ref(4) |-> 1, ref(5) |-> 1, 
+				  					  ref(6) |-> 2,  ref(7) |-> 2, ref(8) |-> 2,
+				  					  ref(19) |-> 19 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 19 |-> (0,sh), fetchCount: 0, Penalty: 0 > .	
+
+
+eq exp5 =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (write(0) ; write(3) ; write(6)) * 20,
+             					 'T2 |-> (write(1) ; write(4) ; write(7)) * 20,
+             					 'T3 |-> (write(2) ; write(5) ; write(8)) * 20  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(0) |-> 0,  ref(1) |-> 0, ref(2) |-> 0, 
+				  					  ref(3) |-> 0,  ref(4) |-> 1, ref(5) |-> 1, 
+				  					  ref(6) |-> 1,  ref(7) |-> 1, ref(8) |-> 2,
+				  					  ref(19) |-> 19 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 19 |-> (0,sh), fetchCount: 0, Penalty: 0 > .					  
+
+eq exp5Lock =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (lock(19) ; (write(0) ; write(3) ; write(6)) * 20 ; unlock(19)),
+             					 'T2 |-> (lock(19) ; (write(1) ; write(4) ; write(7)) * 20 ; unlock(19)),
+             					 'T3 |-> (lock(19) ; (write(2) ; write(5) ; write(8)) * 20 ; unlock(19))  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(0) |-> 0,  ref(1) |-> 0, ref(2) |-> 0, 
+				  					  ref(3) |-> 0,  ref(4) |-> 1, ref(5) |-> 1, 
+				  					  ref(6) |-> 1,  ref(7) |-> 1, ref(8) |-> 2,
+				  					  ref(19) |-> 19 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 19 |-> (0,sh), fetchCount: 0, Penalty: 0 > .	
+
+
+eq exp6 =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (read(2) ; write(0) ; write(3) ; read(8) ; write(6)) * 20,
+             					 'T2 |-> (read(2) ; write(1) ; read(3) ; write(4) ; write(7)) * 30,
+             					 'T3 |-> (write(2) ; write(5) ; read(6) ; write(8)) * 50  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(0) |-> 0,  ref(1) |-> 0, ref(2) |-> 0, 
+				  					  ref(3) |-> 1,  ref(4) |-> 1, ref(5) |-> 1, 
+				  					  ref(6) |-> 2,  ref(7) |-> 2, ref(8) |-> 2,
+				  					  ref(19) |-> 19 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 19 |-> (0,sh), fetchCount: 0, Penalty: 0 > .					  
+
+eq exp6Lock =  
+	             (< C1 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C2 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 > |
+				  < C3 : CR | Rst: nil, InCount: 0.0, HitPer: 0.0, MissPer: 0.0 >)
+				  
+				  < Ta : Task | Data: 'main |-> (Spawn('T1) ; Spawn('T2) ; Spawn('T3)),
+             					 'T1 |-> (lock(19) ; (read(2) ; write(0) ; write(3) ; read(8) ; write(6)) * 20 ; unlock(19)),
+             					 'T2 |-> (lock(19) ; (read(2) ; write(1) ; read(3) ; write(4) ; write(7)) * 30 ; unlock(19)),
+             					 'T3 |-> (lock(19) ; (write(2) ; write(5) ; read(6) ; write(8)) * 50 ; unlock(19))  >
+             					 
+	              < Sch : Qu | TidSet: 'main >
+	              < CaId(C1) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(0, 5) >	
+				  < CaId(C2) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(6, 11) >
+				  < CaId(C3) : Cache | CM: empty, D: nil, CacheSz: 5, Assoc: Assoc(1), Hits: 0.0, Miss: 0.0, Penalty: 0, Range: mem(12, 17) >
+				  
+				  
+				  < Tbl : TBL | Addr: ref(0) |-> 0,  ref(1) |-> 0, ref(2) |-> 0, 
+				  					  ref(3) |-> 1,  ref(4) |-> 1, ref(5) |-> 1, 
+				  					  ref(6) |-> 2,  ref(7) |-> 2, ref(8) |-> 2,
+				  					  ref(19) |-> 19 >
+				    				  
+				  < M : MM | M: 0 |-> (0, sh), 1 |-> (0,sh), 2 |-> (0,sh), 3 |-> (0,sh), 19 |-> (0,sh), fetchCount: 0, Penalty: 0 > .	
+
+
+endm	
+	

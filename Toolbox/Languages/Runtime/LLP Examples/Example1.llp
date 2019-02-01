@@ -1,0 +1,9 @@
+task T1 {write(a0); write(a6); write(a12)}
+
+task T2 {lock(a18); (write(a0); write(a6); write(a12); unlock(a18)) * 10}
+
+task T3 {lock(a18); (write(a12)) || (read(a3))}
+
+main {
+	spawn(T1); spawn(T2)
+}

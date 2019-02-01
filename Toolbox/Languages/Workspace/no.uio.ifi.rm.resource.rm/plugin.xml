@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+	<extension point="org.emftext.access.syntax">
+		<metaInformationProvider class="no.uio.ifi.rm.resource.rm.mopp.RmMetaInformation" id="no.uio.ifi.rm.resource.rm.mopp.RmMetaInformation">
+		</metaInformationProvider>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="org.eclipse.core.resources.problemmarker">
+		</super>
+		<super type="org.eclipse.core.resources.textmarker">
+		</super>
+		<super type="org.eclipse.emf.ecore.diagnostic">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.syntax_error" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.print_problem" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.unresolved_reference" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.analysis_problem" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.batch_constraint_problem" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.live_constraint_problem" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.problem.builder_error" name="EMFText Problem" point="org.eclipse.core.resources.markers">
+		<persistent value="true">
+		</persistent>
+		<super type="no.uio.ifi.rm.resource.rm.problem">
+		</super>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.nature" name="rm nature" point="org.eclipse.core.resources.natures">
+		<runtime>
+			<run class="no.uio.ifi.rm.resource.rm.mopp.RmNature">
+			</run>
+		</runtime>
+		<builder id="no.uio.ifi.rm.resource.rm.builder">
+		</builder>
+	</extension>
+	
+	<extension point="org.eclipse.core.resources.builders" id="no.uio.ifi.rm.resource.rm.builder" name="rm Builder">
+		<builder hasNature="true">
+			<run class="no.uio.ifi.rm.resource.rm.mopp.RmBuilderAdapter">
+			</run>
+		</builder>
+	</extension>
+	
+	<extension-point id="no.uio.ifi.rm.resource.rm.default_load_options" name="Default Load Options" schema="schema/default_load_options.exsd">
+	</extension-point>
+	
+	<extension point="org.eclipse.emf.ecore.extension_parser">
+		<parser class="no.uio.ifi.rm.resource.rm.mopp.RmResourceFactoryDelegator" type="rm">
+		</parser>
+	</extension>
+	
+	<extension-point id="no.uio.ifi.rm.resource.rm.additional_extension_parser" name="Additional Extension Parser" schema="schema/additional_extension_parser.exsd">
+	</extension-point>
+	
+	<extension point="org.eclipse.debug.core.breakpoints">
+		<breakpoint class="no.uio.ifi.rm.resource.rm.debug.RmLineBreakpoint" id="no.uio.ifi.rm.resource.rm.debug.breakpoint" markerType="no.uio.ifi.rm.resource.rm.debug.lineBreakpoint.marker" name="rm Breakpoint">
+		</breakpoint>
+	</extension>
+	
+	<extension id="no.uio.ifi.rm.resource.rm.debug.lineBreakpoint.marker" point="org.eclipse.core.resources.markers">
+		<super type="org.eclipse.debug.core.lineBreakpointMarker">
+		</super>
+		<super type="org.eclipse.core.resources.textmarker">
+		</super>
+		<persistent value="true">
+		</persistent>
+	</extension>
+	
+	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+		<launchConfigurationType id="no.uio.ifi.rm.resource.rm.ui.launchConfigurationType" delegate="no.uio.ifi.rm.resource.rm.launch.RmLaunchConfigurationDelegate" modes="run,debug" name="rm Application" sourceLocatorId="no.uio.ifi.rm.resource.rm.ui.sourceLocator" sourcePathComputerId="no.uio.ifi.rm.resource.rm.ui.sourcePathComputer" delegateName="rm Launch Tooling" delegateDescription="This will run or debug .rm files.">
+		</launchConfigurationType>
+	</extension>
+	
+	<extension point="org.eclipse.debug.core.sourcePathComputers">
+		<sourcePathComputer class="no.uio.ifi.rm.resource.rm.debug.RmSourcePathComputerDelegate" id="no.uio.ifi.rm.resource.rm.ui.sourcePathComputer">
+		</sourcePathComputer>
+	</extension>
+	
+	<extension point="org.eclipse.debug.core.sourceLocators">
+		<sourceLocator id="no.uio.ifi.rm.resource.rm.ui.sourceLocator" class="no.uio.ifi.rm.resource.rm.debug.RmSourceLocator" name="rm Source Locator">
+		</sourceLocator>
+	</extension>
+	
+</plugin>

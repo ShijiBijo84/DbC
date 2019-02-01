@@ -1,0 +1,18 @@
+Program Example
+	Variables a := 2, b := a * 2, c, d.
+	
+	Task T1
+		b := c.
+		c := c * b - 5 / a.
+	
+		d := a.
+	End.
+End.
+
+// w(a); r(a); w(b); w(c); w(d)
+
+// r(c); w(b)
+
+// r(c); r(b); r(a); w(c)
+
+// r(a); w(d)

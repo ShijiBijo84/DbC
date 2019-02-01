@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>RM Examples</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>no.uio.ifi.rm.resource.rm.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>no.uio.ifi.hlp.resource.hlp.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>no.uio.ifi.llp.resource.llp.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>no.uio.ifi.rm.resource.rm.nature</nature>
+		<nature>no.uio.ifi.hlp.resource.hlp.nature</nature>
+		<nature>no.uio.ifi.llp.resource.llp.nature</nature>
+	</natures>
+</projectDescription>

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse Integration
+Bundle-SymbolicName: no.uio.ifi.eclipse;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.ui;visibility:=reexport,
+ de.christophseidl.util.ecore,
+ de.christophseidl.util.eclipse,
+ de.christophseidl.util.eclipse.ui,
+ no.uio.ifi.llp.resource.llp,
+ no.uio.ifi.rm,
+ no.uio.ifi.maudecompiler

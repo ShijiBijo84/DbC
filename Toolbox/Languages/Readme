@@ -1,0 +1,48 @@
+This Readme contains information concerning the use of the (programming) languages implementation of our model of parallel architectures.
+
+The project contains three languages:
+
+o HLP (High-Level Programming Language): A procedural programming language roughly inspired by Pascal.
+
+o LLP (Low-Level Programming Language): An abstraction of the programming logic in LLP that is only concerned with tasks and their memory accesses.
+
+o RM (Resource Model): A language to specify which resources are available, i.e., the number of devices and their characteristics such as memory size, cache size and current memory layout.
+
+The idea is that a user writes an HLP program, which is then reduced to its essential memory accesses by compiling it to an appropriate LLP program. The LLP program together with an RM resource model can then be used to compile to the Maude implementation to check for unfavorable memory accesses. In the process of compilation, a fourth language, LLPM (Low-Level Programming Language for Maude), is used to compile an LLP program to a language that is more directly suitable as input for our Maude implementation.
+
+The runtime platform for these tools is Eclipse and the languages were developed based on the Eclipse Modeling Framework (EMF) using the tool EMText. To use the tools, one has to write a new *.hlp program and create an *.rm resource model within Eclipse (via the new Wizard), which are then compiled automatically to be compatible with our Maude implementation.
+
+
+* Pre-requisites
+  -------------------
+  
+  Eclipse 3.x
+  Eclipse Modeling Framework (EMF)
+  EMFText (continuous build)
+
+
+* Explanation of files
+  --------------------------
+
+  Workspace: Eclipse workspace for developing the (programming) languages.
+    no.uio.ifi.hlp: Project for HLP.
+
+    no.uio.ifi.llp: Project for LLP.
+
+    no.uio.ifi.rm: Project for RM.
+
+    no.uio.ifi.maudecompiler: Compiler to Maude.
+
+    no.uio.ifi.eclipse: Integration of the compiler to Maude with the Eclipse platform.
+
+    <The remaining folders are generated projects.>
+
+  Runtime: Eclipse workspace containing examples of using the (programming) languages.
+
+
+* Usage of files
+  --------------------------
+  Generate Model code for all *.genmodel files in the workspace.
+  Generate Model code for all *.genmodel files in the workspace.
+  Start Runtime Eclipse instance to activate all plugins.
+  Use plugins in runtime instance to create HLP program and RM resource model.

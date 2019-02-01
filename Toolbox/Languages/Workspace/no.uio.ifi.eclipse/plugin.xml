@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+<extension
+      point = "org.eclipse.ui.newWizards">
+	<category
+	   id="no.uio.ifi.newfilewizard.category"
+	   name="Deployment by Construction">
+	</category>
+</extension>
+
+<extension
+         point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <menu
+               id="no.uio.ifi.eclipse.menu"
+               label="Deployment by Construction">
+            <command
+                  commandId="no.uio.ifi.eclipse.commands.GenerateMaudeImplementation"
+                  label="Generate Maude Implementation">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="selection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <or>
+                             <test
+                                   property="org.eclipse.core.resources.extension"
+                                   value="llp">
+                             </test>
+                             <test
+                                   property="org.eclipse.core.resources.extension"
+                                   value="llpm">
+                             </test>
+                           </or>
+                        </adapt>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   
+
+ 
+ 
+
+
+ <extension
+         point="org.eclipse.ui.commands">
+    <command
+          defaultHandler="no.uio.ifi.eclipse.commands.GenerateMaudeImplementationCommandHandler"
+          id="no.uio.ifi.eclipse.commands.GenerateMaudeImplementation"
+          name="Generate Maude Implementation">
+    </command>
+ </extension>
+</plugin>
